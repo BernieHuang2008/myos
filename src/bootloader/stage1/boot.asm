@@ -100,30 +100,30 @@ read_FAT:
     mov bx, buffer                      ; es:bx = memory location to store the read data
     call disk_read
 
-    ; search for kernel.bin
+    ; search for stage2.bin
     xor bx, bx                          ; how many entries already checked
     mov di, buffer                      ; point the current directory entry
 
-.search_kernel:
-    mov si, file_kernel_bin
+.search_nextstage:
+    mov si, file_stage2_bin
     mov cx, 11                          ; compare up to 11 chars
     push di
     repe cmpsb                          ; repete while equal / compare string bytes
     pop di
-    je .found_kernel
+    je .found_nextstage
 
     add di, 32                          ; next directory entry, 32 is the size of a directory entry
     inc bx                              ; increase number of entries checked
     cmp bx, [bdb_dir_entries_count]     ; check if we checked all entries
-    jl .search_kernel                   ; if not, search next entry
+    jl .search_nextstage                   ; if not, search next entry
 
-    ; kernel not found
-    jmp error_kernelNotFound
+    ; nextstage not found
+    jmp error_nextstageNotFound
 
-.found_kernel:
+.found_nextstage:
     ; di should have the address to the entry.
     mov ax, [di + 26]                  ; first logical cluster field (offset 26)
-    mov [kernel_cluster], ax
+    mov [nextstage_cluster], ax
 
     ; load FAT from disk to memory
     mov ax, [bdb_reserved_sectors]
@@ -132,17 +132,17 @@ read_FAT:
     mov dl, [ebr_driver_number]
     call disk_read
 
-    ; read kernel and process FAT chain
+    ; read nextstage and process FAT chain
     mov bx, KERNEL_LOAD_SEGMENT
     mov es, bx
     mov bx, KERNEL_LOAD_OFFSET
 
-.load_kernel_loop:
+.load_nextstage_loop:
     ; read next cluster
-    mov ax, [kernel_cluster]
+    mov ax, [nextstage_cluster]
 
     ; [TODO] hard coded value
-    add ax, 31                          ; first cluster = (kernel_cluster - 2) * sectors_per_cluster + start_sector
+    add ax, 31                          ; first cluster = (nextstage_cluster - 2) * sectors_per_cluster + start_sector
                                         ; start sector = reserved + fats * root dir size
 
     mov cl, 1
@@ -152,11 +152,11 @@ read_FAT:
     add bx, [bdb_bytes_per_sector]    ; move to next sector
 
     ; compute location of next cluster
-    mov ax, [kernel_cluster]
+    mov ax, [nextstage_cluster]
     mov cx, 3
     mul cx
     mov cx, 2
-    div cx                              ; ax = index of entry in fat = (kernel_cluster * 3) / 2, dx = cluster mod 2
+    div cx                              ; ax = index of entry in fat = (nextstage_cluster * 3) / 2, dx = cluster mod 2
 
     mov si, buffer
     add si, ax
@@ -174,11 +174,11 @@ read_FAT:
     cmp ax, 0x0FF8                      ; end of chain
     jae .read_finish
 
-    mov [kernel_cluster], ax
-    jmp .load_kernel_loop
+    mov [nextstage_cluster], ax
+    jmp .load_nextstage_loop
 
 .read_finish:
-    ; jump to kernel
+    ; jump to nextstage
     mov dl, [ebr_driver_number]         ; boot device in dl
 
     mov ax, KERNEL_LOAD_SEGMENT         ; set segment registers
@@ -197,8 +197,8 @@ error_floppyError:
     call puts
     jmp wait_key_and_reboot
 
-error_kernelNotFound:
-    mov si, msg_kernel_not_found
+error_nextstageNotFound:
+    mov si, msg_nextstage_not_found
     call puts
     jmp wait_key_and_reboot
 
@@ -343,13 +343,13 @@ disk_reset:
     ret
 
 
-msg_loading:            db 'Loading ...', ENDL, 0
-msg_prefix_error:       db '[ERROR]'
-msg_read_failed:        db msg_prefix_error, '0', ENDL, 0       ; Read from disk failed!
-msg_kernel_not_found:   db msg_prefix_error, '1', ENDL, 0       ; KERNEL not found!
-msg_wait_key_reboot:    db ENDL, 'Press Any Button To Reboot', 0
-file_kernel_bin:        db 'KERNEL  BIN', 0
-kernel_cluster:         dw 0
+msg_loading:                db 'Loading ...', ENDL, 0
+msg_prefix_error:           db '[ERROR]'
+msg_read_failed:            db msg_prefix_error, '0', ENDL, 0       ; Read from disk failed!
+msg_nextstage_not_found:    db msg_prefix_error, '1', ENDL, 0       ; STAGE2 not found!
+msg_wait_key_reboot:        db ENDL, 'Press Any Key To Reboot', 0
+file_stage2_bin:            db 'KERNEL  BIN', 0
+nextstage_cluster:          dw 0
 
 KERNEL_LOAD_SEGMENT     equ 0x2000
 KERNEL_LOAD_OFFSET      equ 0

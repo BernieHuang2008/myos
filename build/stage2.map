@@ -1,0 +1,87 @@
+Open Watcom Linker Version 2.0 beta Nov  8 2023 01:50:08 (64-bit)
+Copyright (c) 2002-2023 The Open Watcom Contributors. All Rights Reserved.
+Portions Copyright (c) 1985-2002 Sybase, Inc. All Rights Reserved.
+Created on:       23/11/11 10:56:56
+Executable Image: /mnt/g/git/BernieHuang2008/myos/build/stage2.bin
+creating a RAW Binary Image executable
+
+
+                        +------------+
+                        |   Groups   |
+                        +------------+
+
+Group                           Address              Size
+=====                           =======              ====
+
+DGROUP                          00000086             00000016
+
+
+
+                        +--------------+
+                        |   Segments   |
+                        +--------------+
+
+Segment                Class          Group          Address         Size
+=======                =====          =====          =======         ====
+
+_TEXT                  Code           AUTO           00000000        00000086
+CONST                  DATA           DGROUP         00000086        00000015
+CONST2                 DATA           DGROUP         0000009c        00000000
+_DATA                  DATA           DGROUP         0000009c        00000000
+_ENTRY                 OCDE           AUTO           0000009c        00000013
+
+
+                        +----------------+
+                        |   Memory Map   |
+                        +----------------+
+
+* = unreferenced symbol
++ = symbol only referenced locally
+
+Address        Symbol
+=======        ======
+
+Module: /mnt/g/git/BernieHuang2008/myos/build/stage2/asm/x86.obj(x86.asm)
+00000000       _x86_Video_WriteCharTeletype
+Module: /mnt/g/git/BernieHuang2008/myos/build/stage2/asm/main.obj(main.asm)
+0000009c       entry
+Module: /mnt/g/git/BernieHuang2008/myos/build/stage2/c/stdio.obj(/mnt/g/git/BernieHuang2008/myos/src/bootloader/stage2/stdio.c)
+00000013+      putc_
+0000003a       puts_
+Module: /mnt/g/git/BernieHuang2008/myos/build/stage2/c/main.obj(/mnt/g/git/BernieHuang2008/myos/src/bootloader/stage2/main.c)
+00000071       _cstart_
+
+
+                        +---------------------+
+                        |   Module Segments   |
+                        +---------------------+
+
+! = 32-bit segment
+c = initialized communal data
+
+Module          Segment               Class           Address         Size
+======          =======               =====           =======         ====
+
+x86.asm         _TEXT                 Code           00000000         00000013
+main.asm        _ENTRY                OCDE           0000009c         00000013
+/mnt/g/git/BernieHuang2008/myos/src/bootloader/stage2/stdio.c
+                _TEXT                 Code           00000013         0000005e
+                CONST                 DATA           00000086         00000000
+                CONST2                DATA           0000009c         00000000
+                _DATA                 DATA           0000009c         00000000
+/mnt/g/git/BernieHuang2008/myos/src/bootloader/stage2/main.c
+                _TEXT                 Code           00000071         00000015
+                CONST                 DATA           00000086         00000015
+                CONST2                DATA           0000009c         00000000
+                _DATA                 DATA           0000009c         00000000
+Warning! W1014: stack segment not found
+
+
+                        +-----------------------+
+                        |   Linker Statistics   |
+                        +-----------------------+
+
+Stack size:  0200 (512.)
+Memory size:  00af (175.)
+Entry point address: 0000009c
+Link time: 00:00.28
